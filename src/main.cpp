@@ -3,17 +3,17 @@
 #include<sstream>
 #include "Lexer.h"
 
-inline const std::string tokenString(Token token) {
+const std::string tokenString(Token token) {
 	switch(token) {
 		case Token::LITERAL:		return "LITERAL";
 		case Token::OPERATOR:		return "OPERATOR";
 		case Token::KEYWORD:		return "KEYWORD";
 		case Token::IDENTIFIER:		return "IDENTIFIER";
 		case Token::ENDLINE:		return "ENDLINE";
-		case Token::UNKNOWN:		return "UNKNOWN";
+		case Token::BRACKET:		return "BRACKET";
 		case Token::END_OF_FILE:	return "END_OF_FILE";
-		case Token::ERROR:			return "ERROR";
-		default:					return "INVALID";
+		case Token::UNKNOWN:		return "UNKNOWN";
+		default:					return "UNREGISTERED";
 	}
 }
 

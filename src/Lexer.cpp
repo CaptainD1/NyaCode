@@ -14,11 +14,21 @@ const std::string KEYWORDS[] = {
 
 const int NUM_KEYWORDS = 9;// sizeof(KEYWORDS) * sizeof(std::string);
 
-CharType getType(char ch) {
+char getClosingBracket(char openingBracket) {
+    switch(openingBracket) {
+        case '{': return '}';
+        case '(': return ')';
+        case '[': return ']';
+        case '<': return '>';
+        default:  return 0;
+    }
+}
 
-    if (std::isspace(ch)) return CharType::WHITESPACE;
-    if (std::isalpha(ch) || ch == '_') return CharType::ALPHA;
-    if (std::isdigit(ch)) return CharType::NUMERIC;
+Token getType(char ch) {
+
+    if (std::isspace(ch)) return Token::WHITESPACE;
+    if (std::isalpha(ch) || ch == '_') return Token::ALPHA;
+    if (std::isdigit(ch)) return Token::NUMERIC;
     switch (ch) {
         case '!':
         case '%':
@@ -30,23 +40,31 @@ CharType getType(char ch) {
         case '-':
         case '/':
         case '\\':
-            return CharType::OPCOMP;
+        case '.':
+        case ',':
+        case '|':
+        case '<':
+        case '>':
+        case '#':
+        case '~':
+            return Token::OPERATOR;
         case '{':
         case '[':
         case '(':
         case '"':
         case '\'':
+        case '`':
         case '}':
         case ']':
         case ')':
-            return CharType::BRACKET;
+            return Token::BRACKET;
     }
-    return CharType::OTHER;
+    return Token::UNKNOWN;
 }
 
 Token getToken(std::string code, int &start, int &end) {
     int index = start;
-    CharType startType;
+    Token startType;
     std::string literal;
 
     // Bypass all whitespace and comments
@@ -83,13 +101,13 @@ Token getToken(std::string code, int &start, int &end) {
 
     startType = getType(code[index]);
 
-    if (startType == CharType::ALPHA) {
+    if (startType == Token::ALPHA) {
         literal = code[index];
         ++index;
 
         while (index < code.size()) {
-            CharType curType = getType(code[index]);
-            if (curType == CharType::ALPHA || curType == CharType::NUMERIC) {
+            Token curType = getType(code[index]);
+            if (curType == Token::ALPHA || curType == Token::NUMERIC) {
                 literal += code[index];
             } else if (literal.compare("nya") == 0 && code[index] == '~') {
                 end = index + 1;
@@ -105,29 +123,27 @@ Token getToken(std::string code, int &start, int &end) {
         }
         return Token::IDENTIFIER;
 
-    } else if (startType == CharType::OPCOMP || startType == CharType::OTHER) {
+    } else if (startType == Token::OPERATOR || startType == Token::UNKNOWN) {
         for (; index < code.size() && getType(code[index]) == startType; ++index);
         end = index;
-        switch (startType) {
-            case CharType::OPCOMP:  return Token::OPERATOR;
-            case CharType::OTHER:   return Token::UNKNOWN;
-        }
-    } else if (startType == CharType::NUMERIC) {
+        return startType;
+    } else if (startType == Token::NUMERIC) {
         ++index;
 
-        for (CharType curType = getType(code[index]); index < code.size() &&
-            curType == CharType::ALPHA || curType == CharType::NUMERIC; ++index, curType = getType(code[index]));
+        for (Token curType = getType(code[index]); index < code.size() &&
+            curType == Token::ALPHA || curType == Token::NUMERIC; ++index, curType = getType(code[index]));
 
         end = index;
         return Token::LITERAL;
-    } else if (startType == CharType::BRACKET) {
-        if (code[index] == '"' || code[index] == '\'') {
+    } else if (startType == Token::BRACKET) {
+        if (code[index] == '"' || code[index] == '\'' || code[index] == '`') {
+            // String brackets
             char startCh = code[index];
             while (true) {
                 index = code.find(startCh, index + 1);
                 if (index == -1) {
                     end = code.size();
-                    return Token::ERROR;
+                    return Token::UNKNOWN;
                 } else if (code[index - 1] != '\\') {
                     break;
                 }
@@ -135,7 +151,9 @@ Token getToken(std::string code, int &start, int &end) {
             end = index + 1;
             return Token::LITERAL;
         } else {
-            // HANDLE NON-STRING BRACKETS
+            // Non-string brackets
+            end = start + 1;
+            return Token::BRACKET;
         }
     }
 

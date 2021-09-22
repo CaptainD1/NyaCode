@@ -1,6 +1,9 @@
+#ifndef LEXER_H
+#define LEXER_H
 #include <vector>
 #include <string>
 #include <iostream>
+#include <stack>
 
 enum Token {
     LITERAL,
@@ -8,21 +11,17 @@ enum Token {
     KEYWORD,
     IDENTIFIER,
     ENDLINE,
-    UNKNOWN,
-    END_OF_FILE,
-    ERROR
-};
-
-enum CharType {
+    BRACKET,
     WHITESPACE,
     ALPHA,
     NUMERIC,
-    OPCOMP,
-    BRACKET,
-    COMMENT,
-    OTHER
+    END_OF_FILE,
+    UNKNOWN
 };
 
-CharType getType(std::string str, int index);
+Token getType(std::string str, int index);
 Token getToken(std::string code, int &start, int &end);
 std::vector<std::pair<std::string,Token>> getTokens(std::string code);
+char getClosingBracket(char openingBracket);
+
+#endif

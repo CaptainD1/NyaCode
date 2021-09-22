@@ -2,4 +2,8 @@ print + hello ++ there nya~
 hello 231xw412 sda342dxz +-+ -+- "Hello there" 'how are\' you?' nya~
 /* test comment
 test comment
-test comment */ hello+hello+hello // Test comment 2
+test comment */ hello+hello+hello nya~ // Test comment 2
+print("Hello", "world!") nya~
+nyif(foo==123) {
+    okidoki 0x123 | bar nya~
+}
